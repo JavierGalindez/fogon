@@ -1,0 +1,6 @@
+User-agent: *
+Disallow: /api.php
+Disallow: /css/
+Disallow: /js/
+
+Sitemap: https://fogon.onrender.com/sitemap.xml
