@@ -1,7 +1,3 @@
--- Crear base de datos
-CREATE DATABASE IF NOT EXISTS fogon_db;
-USE fogon_db;
-
 -- Tabla de usuarios
 CREATE TABLE IF NOT EXISTS users (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -21,7 +17,7 @@ CREATE TABLE IF NOT EXISTS recipes (
     category VARCHAR(50) NOT NULL,
     ingredients JSON NOT NULL,
     steps JSON NOT NULL,
-    image VARCHAR(255),
+    image VARCHAR(500),
     author_id INT NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
