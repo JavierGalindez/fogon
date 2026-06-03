@@ -1,165 +1,128 @@
 const Storage = (() => {
-  // Usa la base definida en index.php, o detecta automáticamente
-  const BASE = (window.APP_CONFIG && window.APP_CONFIG.apiUrl)
-    ? window.APP_CONFIG.apiUrl
-    : (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-        ? '/Proyecto_Final/api.php'
-        : '/api.php');
 
-  const api = async (endpoint, method = 'GET', data = null) => {
-    const url = `${API_BASE}/${endpoint}`;
-    const options = { method, headers: { 'Content-Type': 'application/json' } };
+  const getBase = () => {
+    if (window.APP_CONFIG && window.APP_CONFIG.apiUrl) {
+      return window.APP_CONFIG.apiUrl;
+    }
+    var h = window.location.hostname;
+    if (h === 'localhost' || h === '127.0.0.1') {
+      return '/Proyecto_Final/api.php';
+    }
+    return '/api.php';
+  };
+
+  const api = async (endpoint, method, data) => {
+    method = method || 'GET';
+    data   = data   || null;
+    var BASE = getBase();
+    var url  = BASE + '/' + endpoint;
+    var options = { method: method, headers: { 'Content-Type': 'application/json' } };
     if (data) options.body = JSON.stringify(data);
     try {
-      const response = await fetch(url, options);
+      var response = await fetch(url, options);
       return await response.json();
     } catch (error) {
       console.error('API Error:', error);
-      return { success: false, error: 'Error de conexión' };
+      return { success: false, error: 'Error de conexion' };
     }
   };
 
-  // Sesión (localStorage para mantener compatibilidad)
-  const getSession = () => {
-    const session = localStorage.getItem('fogon_session');
-    return session ? JSON.parse(session) : null;
-  };
-  const setSession = (userId) => {
-    localStorage.setItem('fogon_session', JSON.stringify({ userId, loginAt: new Date().toISOString() }));
-  };
-  const clearSession = () => localStorage.removeItem('fogon_session');
-  const getCurrentUser = async () => {
-    const session = getSession();
-    if (!session) return null;
-    return await getUserById(session.userId);
-  };
+  var getSession   = function() { var s = localStorage.getItem('fogon_session'); return s ? JSON.parse(s) : null; };
+  var setSession   = function(userId) { localStorage.setItem('fogon_session', JSON.stringify({ userId: userId, loginAt: new Date().toISOString() })); };
+  var clearSession = function() { localStorage.removeItem('fogon_session'); };
+  var getCurrentUser = async function() { var session = getSession(); if (!session) return null; return await getUserById(session.userId); };
 
-  // Helper para normalizar IDs a números
-  const normalizeId = (id) => {
+  var normalizeId = function(id) {
     if (id === null || id === undefined) return null;
-    const num = Number(id);
+    var num = Number(id);
     return isNaN(num) ? null : num;
   };
 
-  // Usuarios
-  const getUsers = async () => (await api('users')) || [];
-  const getUserById = async (id) => {
-    const normalizedId = normalizeId(id);
-    if (normalizedId === null) return null;
-    return await api(`users/${normalizedId}`);
-  };
-  const getUserByEmail = async (email) => {
-    const users = await getUsers();
-    return users.find(u => u.email.toLowerCase() === email.toLowerCase()) || null;
-  };
-  const getUserByUsername = async (username) => {
-    const users = await getUsers();
-    return users.find(u => u.username === username) || null;
-  };
-  const createUser = async ({ name, username, email, password }) => {
-    const result = await api('users', 'POST', { name, username, email, password });
-    if (result.success) { setSession(result.user.id); return result.user; }
-    throw new Error(result.error || 'Error al crear usuario');
+  var getUsers          = async function() { var r = await api('users'); return Array.isArray(r) ? r : []; };
+  var getUserById       = async function(id) { var nid = normalizeId(id); if (nid === null) return null; return await api('users/' + nid); };
+  var getUserByEmail    = async function(email) { var users = await getUsers(); return users.find(function(u){ return u.email.toLowerCase() === email.toLowerCase(); }) || null; };
+  var getUserByUsername = async function(username) { var users = await getUsers(); return users.find(function(u){ return u.username === username; }) || null; };
+  var createUser = async function(d) {
+    var result = await api('users', 'POST', d);
+    if (result && result.success) { setSession(result.user.id); return result.user; }
+    throw new Error((result && result.error) || 'Error al crear usuario');
   };
 
-  // Recetas
-  const getRecipes = async () => (await api('recipes')) || [];
-
-  const getRecipeById = async (id) => {
-    const normalizedId = normalizeId(id);
-    if (normalizedId === null) {
-      console.error('ID inválido en getRecipeById:', id);
-      return null;
-    }
-
-    const result = await api(`recipes/${normalizedId}`);
-
-    // Si el backend devuelve un array (error), buscar la receta con el ID correcto
-    if (Array.isArray(result)) {
-      console.warn('El backend devolvió un array en lugar de un objeto. Buscando receta con ID:', normalizedId);
-      return result.find(r => Number(r.id) === normalizedId) || null;
-    }
-
+  var getRecipes = async function() { var r = await api('recipes'); return Array.isArray(r) ? r : []; };
+  var getRecipeById = async function(id) {
+    var nid = normalizeId(id);
+    if (nid === null) return null;
+    var result = await api('recipes/' + nid);
+    if (Array.isArray(result)) return result.find(function(r){ return Number(r.id) === nid; }) || null;
     return result || null;
   };
-
-  const createRecipe = async (data) => {
-    const result = await api('recipes', 'POST', data);
+  var createRecipe = async function(data) {
+    var result = await api('recipes', 'POST', data);
     if (result && result.success) return result.recipe;
-    throw new Error(result?.error || 'Error al crear receta');
+    throw new Error((result && result.error) || 'Error al crear receta');
   };
-
-  const updateRecipe = async (id, data) => {
-    const result = await api(`recipes/${id}`, 'PUT', { ...data, id });
+  var updateRecipe = async function(id, data) {
+    var d = Object.assign({}, data, { id: id });
+    var result = await api('recipes/' + id, 'PUT', d);
     if (result && result.success) return result.recipe;
-    throw new Error(result?.error || 'Error al actualizar receta');
+    throw new Error((result && result.error) || 'Error al actualizar receta');
   };
-  const deleteRecipe = async (id) => {
-    const normalizedId = normalizeId(id);
-    if (normalizedId === null) {
-      return false;
-    }
-    const result = await api(`recipes/${normalizedId}`, 'DELETE');
-    return result.success;
+  var deleteRecipe = async function(id) {
+    var nid = normalizeId(id);
+    if (nid === null) return false;
+    var result = await api('recipes/' + nid, 'DELETE');
+    return result && result.success;
   };
 
-  // Comentarios
-  const getComments = async () => (await api('comments')) || [];
-  const getCommentsByRecipe = async (recipeId) => {
-    const normalizedId = normalizeId(recipeId);
-    if (normalizedId === null) return [];
-    return (await api(`comments?recipeId=${normalizedId}`)) || [];
+  var getComments         = async function() { var r = await api('comments'); return Array.isArray(r) ? r : []; };
+  var getCommentsByRecipe = async function(recipeId) {
+    var nid = normalizeId(recipeId);
+    if (nid === null) return [];
+    var r = await api('comments?recipeId=' + nid);
+    return Array.isArray(r) ? r : [];
   };
-  const addComment = async ({ recipeId, authorId, text }) => {
-    const normalizedRecipeId = normalizeId(recipeId);
-    const normalizedAuthorId = normalizeId(authorId);
-    if (normalizedRecipeId === null || normalizedAuthorId === null) {
-      return { success: false, error: 'IDs inválidos' };
-    }
-    const result = await api('comments', 'POST', { recipeId: normalizedRecipeId, authorId: normalizedAuthorId, text });
-    return result.success ? result.comment : { success: false, error: result.error };
+  var addComment = async function(d) {
+    var nRid = normalizeId(d.recipeId), nAid = normalizeId(d.authorId);
+    if (nRid === null || nAid === null) return { success: false, error: 'IDs invalidos' };
+    var result = await api('comments', 'POST', { recipeId: nRid, authorId: nAid, text: d.text });
+    return (result && result.success) ? result.comment : { success: false, error: (result && result.error) };
   };
-  const deleteComment = async (id) => {
-    const normalizedId = normalizeId(id);
-    if (normalizedId === null) return false;
-    const result = await api(`comments/${normalizedId}`, 'DELETE');
-    return result.success;
+  var deleteComment = async function(id) {
+    var nid = normalizeId(id);
+    if (nid === null) return false;
+    var result = await api('comments/' + nid, 'DELETE');
+    return result && result.success;
   };
 
-  // Calificaciones
-  const getRatings = async () => (await api('ratings')) || [];
-  const getUserRating = async (recipeId, userId) => {
-    const normalizedRecipeId = normalizeId(recipeId);
-    const normalizedUserId = normalizeId(userId);
-    if (normalizedRecipeId === null || normalizedUserId === null) return null;
-    return await api(`ratings?recipeId=${normalizedRecipeId}&userId=${normalizedUserId}`);
+  var getRatings = async function() { var r = await api('ratings'); return Array.isArray(r) ? r : []; };
+  var getUserRating = async function(recipeId, userId) {
+    var nr = normalizeId(recipeId), nu = normalizeId(userId);
+    if (nr === null || nu === null) return null;
+    return await api('ratings?recipeId=' + nr + '&userId=' + nu);
   };
-  const getAverageRating = async (recipeId) => {
-    const normalizedId = normalizeId(recipeId);
-    if (normalizedId === null) return { avg: 0, count: 0 };
-    const ratings = await getRatings().then(r => r.filter(rt => Number(rt.recipe_id) === normalizedId));
+  var getAverageRating = async function(recipeId) {
+    var nid = normalizeId(recipeId);
+    if (nid === null) return { avg: 0, count: 0 };
+    var all = await getRatings();
+    var ratings = all.filter(function(rt){ return Number(rt.recipe_id) === nid; });
     if (!ratings.length) return { avg: 0, count: 0 };
-    const avg = ratings.reduce((s, r) => s + Number(r.value), 0) / ratings.length;
+    var avg = ratings.reduce(function(s, r){ return s + Number(r.value); }, 0) / ratings.length;
     return { avg: Math.round(avg * 10) / 10, count: ratings.length };
   };
-  const setRating = async ({ recipeId, userId, value }) => {
-    const normalizedRecipeId = normalizeId(recipeId);
-    const normalizedUserId = normalizeId(userId);
-    if (normalizedRecipeId === null || normalizedUserId === null) {
-      return { success: false, error: 'IDs inválidos' };
-    }
-    return await api('ratings', 'POST', { recipeId: normalizedRecipeId, userId: normalizedUserId, value });
+  var setRating = async function(d) {
+    var nr = normalizeId(d.recipeId), nu = normalizeId(d.userId);
+    if (nr === null || nu === null) return { success: false, error: 'IDs invalidos' };
+    return await api('ratings', 'POST', { recipeId: nr, userId: nu, value: d.value });
   };
 
-  // Seed para desarrollo local
-  const seedIfEmpty = async () => {
+  var seedIfEmpty = async function() {
     if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
       try {
-        const users = await getUsers();
+        var users = await getUsers();
         if (users.length === 0) {
           await createUser({ name: 'Chef Demo', username: 'chefdemo', email: 'demo@fogon.com', password: 'demo123' });
         }
-      } catch (e) { console.log('Seed error:', e); }
+      } catch(e) { console.log('Seed error:', e); }
     }
   };
 
