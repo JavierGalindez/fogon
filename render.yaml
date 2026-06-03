@@ -5,10 +5,12 @@ services:
     plan: free
     envVars:
       - key: DB_HOST
-        sync: false
+        value: sql10.freesqldatabase.com
       - key: DB_USER
-        sync: false
+        value: sql10829093
       - key: DB_PASSWORD
-        sync: false
+        value: sBciLrbrmk
       - key: DB_NAME
-        sync: false
+        value: sql10829093
+      - key: DB_PORT
+        value: "3306"
