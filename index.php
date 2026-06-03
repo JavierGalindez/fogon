@@ -62,7 +62,8 @@ $v = '5.0';
 
   <script>
     window.APP_CONFIG = {
-      apiUrl: '/Proyecto_Final/api.php'
+      apiUrl: '<?= $base ?>/api.php',
+      base:   '<?= $base ?>'
     };
   </script>
   <script src="/js/storage.js"></script>
