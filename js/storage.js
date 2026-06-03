@@ -1,5 +1,5 @@
 const Storage = (() => {
-  const API_BASE = '/Proyecto_Final/api.php';
+  const API_BASE = '/api.php';
 
   const api = async (endpoint, method = 'GET', data = null) => {
     const url = `${API_BASE}/${endpoint}`;
