@@ -47,8 +47,13 @@ const UI = (() => {
   // ── Recipe Card ───────────────────────────────────
   const recipeCard = (recipe) => {
     const imgHTML = recipe.image
-      ? `<img class="recipe-card-img" src="${escapeHTML(recipe.image)}" alt="${escapeHTML(recipe.title)}" loading="lazy">`
-      : `<div class="recipe-card-img-placeholder">${categoryIcon(recipe.category)}</div>`;
+    ? `<img class="recipe-card-img" 
+          src="${UI.escapeHTML(recipe.image.replace('http:', 'https:'))}" 
+          alt="${UI.escapeHTML(recipe.title)}" 
+          loading="lazy" 
+          crossorigin="anonymous"
+          onerror="this.onerror=null; this.parentNode.innerHTML='<div class=\'recipe-card-img-placeholder\'>${UI.categoryIcon(recipe.category)}</div>'">`
+    : `<div class="recipe-card-img-placeholder">${UI.categoryIcon(recipe.category)}</div>`;
 
     return `
       <article class="recipe-card fade-up" onclick="App.showDetail(${parseInt(recipe.id, 10)})">

@@ -131,9 +131,13 @@ const App = (() => {
     const userRating  = currentUser ? await Storage.getUserRating(numericId, currentUser.id) : null;
  
     const imgHTML = recipe.image
-      ? '<img class="detail-img" src="' + UI.escapeHTML(recipe.image) + '" alt="' + UI.escapeHTML(recipe.title) + '">'
-      : '<div class="detail-img-placeholder">' + UI.categoryIcon(recipe.category) + '</div>';
- 
+      ? `<img class="detail-img" 
+            src="${UI.escapeHTML(recipe.image.replace('http:', 'https:'))}" 
+            alt="${UI.escapeHTML(recipe.title)}"
+            crossorigin="anonymous"
+            onerror="this.onerror=null; this.parentNode.innerHTML='<div class=\'detail-img-placeholder\'>${UI.categoryIcon(recipe.category)}</div>'">`
+      : `<div class="detail-img-placeholder">${UI.categoryIcon(recipe.category)}</div>`;
+    
     let ingredients = [];
     let steps = [];
     try {
