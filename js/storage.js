@@ -6,7 +6,7 @@ const Storage = (() => {
     }
     var h = window.location.hostname;
     if (h === 'localhost' || h === '127.0.0.1') {
-      return '/api.php';
+      return '/Proyecto_Final/api.php';
     }
     return '/api.php';
   };

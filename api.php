@@ -2,14 +2,26 @@
 ini_set('display_errors', 1);
 error_reporting(E_ALL);
 require_once 'db.php';
- 
+
+// Soporte para PATH_INFO y REQUEST_URI
 $path = $_SERVER['PATH_INFO'] ?? '';
+if (empty($path)) {
+    $uri = $_SERVER['REQUEST_URI'] ?? '';
+    $scriptName = $_SERVER['SCRIPT_NAME'] ?? '';
+    $path = substr($uri, strlen($scriptName));
+    $path = strtok($path, '?');
+}
 $path = trim($path, '/');
 $parts = explode('/', $path);
 $resource = $parts[0] ?? '';
 $id = $parts[1] ?? null;
 $method = $_SERVER['REQUEST_METHOD'];
- 
+
+// Manejar OPTIONS para CORS
+if ($method === 'OPTIONS') {
+    http_response_code(200);
+    exit();
+}
 switch ($resource) {
     case 'recipes':  handleRecipes($method, $id); break;
     case 'users':    handleUsers($method, $id); break;
