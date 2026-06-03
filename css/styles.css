@@ -622,15 +622,17 @@ input[type="file"] { display: none; }
 .tab-btn:hover  { color: var(--ink); }
 
 /* ── RESPONSIVE ──────────────────────────────────────── */
-@media (max-width: 680px) {
-  .header-inner { padding: .7rem 1rem; }
-  .main-nav { gap: .4rem; }
-  .logo-tagline { display: none; }
-  .hero { padding: 3rem 1rem 2.5rem; }
-  .section { padding: 2rem 1rem; }
-  .recipe-grid { grid-template-columns: 1fr; }
-  .detail-body { padding: 1.5rem 1rem; }
-  .tabs { overflow-x: auto; }
+@media (max-width: 480px) {
+  .nav-link { display: none; } 
+  .logo-name { font-size: 1.2rem; }
+  .hero h1 { font-size: 1.8rem; }
+  .hero-stats { gap: 1.2rem; }
+  .hero-stat-num { font-size: 1.4rem; }
+  .hero-cta { flex-direction: column; align-items: center; }
+  .modal-container { margin: 0.5rem; border-radius: var(--radius-md); }
+  .modal-body { padding: 1rem; }
+  .nav-user-name { display: none; }
+  .nav-btn { padding: .38rem .7rem; font-size: .8rem; }
 }
 
 /* ── ANIMATIONS ──────────────────────────────────────── */
