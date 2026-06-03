@@ -1,0 +1,12 @@
+Options +FollowSymLinks
+RewriteEngine On
+
+# Permitir acceso directo a archivos y carpetas existentes
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+
+# Manejar PATH_INFO para api.php
+RewriteRule ^api\.php/(.*)$ /api.php [L,QSA]
+
+# Forzar que index.php maneje la raíz
+DirectoryIndex index.php
