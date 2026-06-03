@@ -1,14 +1,5 @@
 <?php
 header('Content-Type: text/html; charset=UTF-8');
-
-// Detecta si estamos en local (XAMPP) o en producción (Render)
-$isLocal = (
-    isset($_SERVER['HTTP_HOST']) &&
-    (strpos($_SERVER['HTTP_HOST'], 'localhost') !== false ||
-     strpos($_SERVER['HTTP_HOST'], '127.0.0.1') !== false)
-);
-$base = $isLocal ? '/Proyecto_Final' : '';
-$v = '4.0';
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -21,8 +12,11 @@ $v = '4.0';
   <meta property="og:title" content="Fogón — Plataforma de Recetas"/>
   <meta property="og:description" content="Explora, inspira y disfruta recetas únicas que conectan tradición y creatividad."/>
   <meta property="og:type" content="website"/>
+  <meta property="og:url" content="<?php echo defined('APP_URL') ? APP_URL : 'https://' . ($_SERVER['HTTP_HOST'] ?? 'fogon.onrender.com'); ?>"/>
+  <meta property="og:image" content="<?php echo defined('APP_URL') ? APP_URL : 'https://' . ($_SERVER['HTTP_HOST'] ?? 'fogon.onrender.com'); ?>/images/og-image.jpg"/>
   <title>Fogón — Plataforma de Recetas</title>
-  <link rel="stylesheet" href="<?= $base ?>/css/styles.css?v=<?= $v ?>">
+  <link rel="stylesheet" href="/Proyecto_Final/css/styles.css">
+  <link rel="canonical" href="<?php echo defined('APP_URL') ? APP_URL : 'https://' . ($_SERVER['HTTP_HOST'] ?? 'fogon.onrender.com'); ?>"/>
 </head>
 <body>
 
@@ -38,7 +32,7 @@ $v = '4.0';
         <span class="logo-icon">🍳</span>
         <div class="logo-text">
           <span class="logo-name">Fogón</span>
-          <span class="logo-tagline">Cocina &amp; Comunidad</span>
+          <span class="logo-tagline">Cocina & Comunidad</span>
         </div>
       </div>
       <nav class="main-nav">
@@ -60,15 +54,14 @@ $v = '4.0';
 
   <script>
     window.APP_CONFIG = {
-      apiUrl: '<?= $base ?>/api.php',
-      base:   '<?= $base ?>'
+      apiUrl: '/Proyecto_Final/api.php'
     };
   </script>
-  <script src="<?= $base ?>/js/storage.js?v=<?= $v ?>"></script>
-  <script src="<?= $base ?>/js/auth.js?v=<?= $v ?>"></script>
-  <script src="<?= $base ?>/js/recipes.js?v=<?= $v ?>"></script>
-  <script src="<?= $base ?>/js/comments.js?v=<?= $v ?>"></script>
-  <script src="<?= $base ?>/js/ui.js?v=<?= $v ?>"></script>
-  <script src="<?= $base ?>/js/app.js?v=<?= $v ?>"></script>
+  <script src="/Proyecto_Final/js/storage.js"></script>
+  <script src="/Proyecto_Final/js/auth.js"></script>
+  <script src="/Proyecto_Final/js/recipes.js"></script>
+  <script src="/Proyecto_Final/js/comments.js"></script>
+  <script src="/Proyecto_Final/js/ui.js"></script>
+  <script src="/Proyecto_Final/js/app.js"></script>
 </body>
 </html>
