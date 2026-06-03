@@ -6,7 +6,7 @@ $isLocal = (
      strpos($_SERVER['HTTP_HOST'], '127.0.0.1') !== false)
 );
 $base = $isLocal ? '/Proyecto_Final' : '';
-$v = '4.0';
+$v = '5.0';
 ?>
 
 <!DOCTYPE html>
