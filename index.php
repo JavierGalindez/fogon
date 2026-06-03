@@ -15,7 +15,7 @@ header('Content-Type: text/html; charset=UTF-8');
   <meta property="og:url" content="<?php echo defined('APP_URL') ? APP_URL : 'https://' . ($_SERVER['HTTP_HOST'] ?? 'fogon.onrender.com'); ?>"/>
   <meta property="og:image" content="<?php echo defined('APP_URL') ? APP_URL : 'https://' . ($_SERVER['HTTP_HOST'] ?? 'fogon.onrender.com'); ?>/images/og-image.jpg"/>
   <title>Fogón — Plataforma de Recetas</title>
-  <link rel="stylesheet" href="/Proyecto_Final/css/styles.css">
+  <link rel="stylesheet" href="/css/styles.css">
   <link rel="canonical" href="<?php echo defined('APP_URL') ? APP_URL : 'https://' . ($_SERVER['HTTP_HOST'] ?? 'fogon.onrender.com'); ?>"/>
 </head>
 <body>
@@ -57,11 +57,11 @@ header('Content-Type: text/html; charset=UTF-8');
       apiUrl: '/Proyecto_Final/api.php'
     };
   </script>
-  <script src="/Proyecto_Final/js/storage.js"></script>
-  <script src="/Proyecto_Final/js/auth.js"></script>
-  <script src="/Proyecto_Final/js/recipes.js"></script>
-  <script src="/Proyecto_Final/js/comments.js"></script>
-  <script src="/Proyecto_Final/js/ui.js"></script>
-  <script src="/Proyecto_Final/js/app.js"></script>
+  <script src="/js/storage.js"></script>
+  <script src="/js/auth.js"></script>
+  <script src="/js/recipes.js"></script>
+  <script src="/js/comments.js"></script>
+  <script src="/js/ui.js"></script>
+  <script src="/js/app.js"></script>
 </body>
 </html>

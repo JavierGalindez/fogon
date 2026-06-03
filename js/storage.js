@@ -5,23 +5,12 @@ const Storage = (() => {
     const url = `${API_BASE}/${endpoint}`;
     const options = { method, headers: { 'Content-Type': 'application/json' } };
     if (data) options.body = JSON.stringify(data);
-
     try {
       const response = await fetch(url, options);
-
-      // Verificar si la respuesta es JSON válido
-      const contentType = response.headers.get('content-type');
-      if (!contentType || !contentType.includes('application/json')) {
-        const text = await response.text();
-        console.error('❌ Respuesta NO es JSON. URL:', url, '| Contenido:', text.substring(0, 200));
-        return { success: false, error: `El servidor devolvió: ${text.substring(0, 100)}...` };
-      }
-
-      const json = await response.json();
-      return json;
+      return await response.json();
     } catch (error) {
-      console.error('❌ Error de red en API:', error);
-      return { success: false, error: 'No se pudo conectar al servidor.' };
+      console.error('API Error:', error);
+      return { success: false, error: 'Error de conexión' };
     }
   };
 
