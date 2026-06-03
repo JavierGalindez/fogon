@@ -3,37 +3,45 @@ ini_set('display_errors', 1);
 error_reporting(E_ALL);
 require_once 'db.php';
 
-// Soporte para PATH_INFO y REQUEST_URI
+// ── Routing por query params en vez de PATH_INFO ──────────────
+// Antes: /api.php/recipes/1  →  ahora: /api.php?resource=recipes&id=1
+// Esto resuelve que Render/Apache no pase PATH_INFO correctamente.
+
+// Intentar PATH_INFO primero (local), caer a query params (producción)
 $path = $_SERVER['PATH_INFO'] ?? '';
-if (empty($path)) {
-    $uri = $_SERVER['REQUEST_URI'] ?? '';
-    $scriptName = $_SERVER['SCRIPT_NAME'] ?? '';
-    $path = substr($uri, strlen($scriptName));
-    $path = strtok($path, '?');
-}
 $path = trim($path, '/');
-$parts = explode('/', $path);
-$resource = $parts[0] ?? '';
-$id = $parts[1] ?? null;
+
+if ($path !== '') {
+    // Modo local con PATH_INFO
+    $parts    = explode('/', $path);
+    $resource = $parts[0] ?? '';
+    $id       = $parts[1] ?? null;
+} else {
+    // Modo producción con query params
+    $resource = $_GET['resource'] ?? '';
+    $id       = $_GET['id']       ?? null;
+}
+
 $method = $_SERVER['REQUEST_METHOD'];
 
-// Manejar OPTIONS para CORS
+// OPTIONS preflight para CORS
 if ($method === 'OPTIONS') {
     http_response_code(200);
-    exit();
+    exit;
 }
+
 switch ($resource) {
     case 'recipes':  handleRecipes($method, $id); break;
-    case 'users':    handleUsers($method, $id); break;
+    case 'users':    handleUsers($method, $id);   break;
     case 'comments': handleComments($method, $id); break;
     case 'ratings':  handleRatings($method, $id); break;
-    case 'auth':     handleAuth($method); break;
-    case 'upload':   handleUpload(); break;
+    case 'auth':     handleAuth($method);          break;
+    case 'upload':   handleUpload();               break;
     default:
         http_response_code(404);
-        echo json_encode(['error' => 'Recurso no encontrado']);
+        echo json_encode(['error' => 'Recurso no encontrado', 'resource' => $resource, 'path' => $path]);
 }
- 
+
 // ── UPLOAD DE IMAGEN ──────────────────────────────────────────
 function handleUpload() {
     if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
@@ -41,45 +49,45 @@ function handleUpload() {
         echo json_encode(['success' => false, 'error' => 'Método no permitido']);
         return;
     }
- 
+
     if (!isset($_FILES['image']) || $_FILES['image']['error'] !== UPLOAD_ERR_OK) {
         $errorMsg = isset($_FILES['image']) ? 'Error código: ' . $_FILES['image']['error'] : 'No se recibió archivo';
         echo json_encode(['success' => false, 'error' => $errorMsg]);
         return;
     }
- 
+
     $file     = $_FILES['image'];
     $allowed  = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
     $mimeType = mime_content_type($file['tmp_name']);
- 
+
     if (!in_array($mimeType, $allowed)) {
         echo json_encode(['success' => false, 'error' => 'Formato no permitido. Usa JPG, PNG, GIF o WEBP.']);
         return;
     }
- 
+
     if ($file['size'] > 5 * 1024 * 1024) {
         echo json_encode(['success' => false, 'error' => 'La imagen no puede superar 5MB.']);
         return;
     }
- 
+
     $uploadDir = __DIR__ . '/uploads/';
     if (!is_dir($uploadDir)) {
         mkdir($uploadDir, 0755, true);
     }
- 
+
     $ext      = pathinfo($file['name'], PATHINFO_EXTENSION);
     $filename = uniqid('img_', true) . '.' . strtolower($ext);
     $destPath = $uploadDir . $filename;
- 
+
     if (!move_uploaded_file($file['tmp_name'], $destPath)) {
         echo json_encode(['success' => false, 'error' => 'Error al mover el archivo.']);
         return;
     }
- 
-    $url = '/Proyecto_Final/uploads/' . $filename;
+
+    $url = '/uploads/' . $filename;
     echo json_encode(['success' => true, 'url' => $url]);
 }
- 
+
 // ── RECIPES ───────────────────────────────────────────────────
 function handleRecipes($method, $id) {
     global $db;
@@ -109,7 +117,7 @@ function handleRecipes($method, $id) {
                 echo json_encode($recipes);
             }
             break;
- 
+
         case 'POST':
             $data = json_decode(file_get_contents('php://input'), true);
             $db->execute(
@@ -121,7 +129,7 @@ function handleRecipes($method, $id) {
             $recipeId = $db->getLastInsertId();
             echo json_encode(['success' => true, 'recipe' => $db->query("SELECT * FROM recipes WHERE id = ?", [$recipeId])->fetch_assoc()]);
             break;
- 
+
         case 'PUT':
             $data    = json_decode(file_get_contents('php://input'), true);
             $idParam = $id ? intval($id) : intval($data['id'] ?? 0);
@@ -133,7 +141,7 @@ function handleRecipes($method, $id) {
             );
             echo json_encode(['success' => true, 'recipe' => $db->query("SELECT * FROM recipes WHERE id = ?", [$idParam])->fetch_assoc()]);
             break;
- 
+
         case 'DELETE':
             $numericId = intval($id);
             $db->execute("DELETE FROM recipes  WHERE id = ?",         [$numericId]);
@@ -143,7 +151,7 @@ function handleRecipes($method, $id) {
             break;
     }
 }
- 
+
 // ── USERS ─────────────────────────────────────────────────────
 function handleUsers($method, $id) {
     global $db;
@@ -166,7 +174,7 @@ function handleUsers($method, $id) {
             break;
     }
 }
- 
+
 // ── COMMENTS ──────────────────────────────────────────────────
 function handleComments($method, $id) {
     global $db;
@@ -194,7 +202,7 @@ function handleComments($method, $id) {
             break;
     }
 }
- 
+
 // ── RATINGS ───────────────────────────────────────────────────
 function handleRatings($method, $id) {
     global $db;
@@ -225,14 +233,14 @@ function handleRatings($method, $id) {
             break;
     }
 }
- 
+
 // ── AUTH ──────────────────────────────────────────────────────
 function handleAuth($method) {
     global $db;
     if ($method !== 'POST') return;
     $data   = json_decode(file_get_contents('php://input'), true);
     $action = $data['action'] ?? '';
- 
+
     if ($action === 'login') {
         $user = $db->query("SELECT * FROM users WHERE email = ?", [$data['email']])->fetch_assoc();
         if (!$user || !password_verify($data['password'], $user['password'])) {
@@ -240,18 +248,18 @@ function handleAuth($method) {
             return;
         }
         echo json_encode(['success' => true, 'user' => ['id' => $user['id'], 'name' => $user['name'], 'username' => $user['username'], 'email' => $user['email']]]);
- 
+
     } elseif ($action === 'register') {
         $errors = [];
-        if (strlen($data['name']) < 2)                              $errors['name']     = 'El nombre debe tener al menos 2 caracteres.';
-        if (!preg_match('/^[a-z0-9_]{3,20}$/i', $data['username'])) $errors['username'] = 'Usuario inválido (3-20 chars).';
-        if (!filter_var($data['email'], FILTER_VALIDATE_EMAIL))     $errors['email']    = 'Email inválido.';
-        if (strlen($data['password']) < 6)                          $errors['password'] = 'La contraseña debe tener al menos 6 caracteres.';
+        if (strlen($data['name']) < 2)                               $errors['name']     = 'El nombre debe tener al menos 2 caracteres.';
+        if (!preg_match('/^[a-z0-9_]{3,20}$/i', $data['username']))  $errors['username'] = 'Usuario inválido (3-20 chars).';
+        if (!filter_var($data['email'], FILTER_VALIDATE_EMAIL))      $errors['email']    = 'Email inválido.';
+        if (strlen($data['password']) < 6)                           $errors['password'] = 'La contraseña debe tener al menos 6 caracteres.';
         if (!empty($errors)) { echo json_encode(['success' => false, 'errors' => $errors]); return; }
- 
+
         $existing = $db->query("SELECT id FROM users WHERE username = ? OR email = ?", [$data['username'], $data['email']])->fetch_assoc();
         if ($existing) { echo json_encode(['success' => false, 'error' => 'Usuario o email ya existen']); return; }
- 
+
         $passwordHash = password_hash($data['password'], PASSWORD_DEFAULT);
         $db->execute("INSERT INTO users (name, username, email, password) VALUES (?, ?, ?, ?)",
             [$data['name'], $data['username'], $data['email'], $passwordHash]);

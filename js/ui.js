@@ -1,9 +1,9 @@
 /**
  * ui.js — Componentes de interfaz reutilizables
  */
- 
+
 const UI = (() => {
- 
+
   // ── Toast Notifications ───────────────────────────
   let toastTimeout;
   const toast = (message, type = 'info') => {
@@ -13,27 +13,27 @@ const UI = (() => {
     clearTimeout(toastTimeout);
     toastTimeout = setTimeout(() => { el.className = 'toast'; }, 3200);
   };
- 
+
   // ── Modal ─────────────────────────────────────────
   const openModal = (html) => {
-    const overlay = document.getElementById('modal-overlay');
+    const overlay   = document.getElementById('modal-overlay');
     const container = document.getElementById('modal-container');
     container.innerHTML = html;
     overlay.classList.remove('hidden');
     document.body.style.overflow = 'hidden';
   };
- 
+
   const closeModal = () => {
     const overlay = document.getElementById('modal-overlay');
     overlay.classList.add('hidden');
     document.getElementById('modal-container').innerHTML = '';
     document.body.style.overflow = '';
   };
- 
+
   document.getElementById('modal-overlay').addEventListener('click', (e) => {
     if (e.target === e.currentTarget) closeModal();
   });
- 
+
   // ── Stars Display ─────────────────────────────────
   const starsHTML = (avg, count = null) => {
     let stars = '';
@@ -43,13 +43,13 @@ const UI = (() => {
     const countHTML = count !== null ? `<span class="star-count">(${count})</span>` : '';
     return `<div class="star-display">${stars}${countHTML}</div>`;
   };
- 
+
   // ── Recipe Card ───────────────────────────────────
   const recipeCard = (recipe) => {
     const imgHTML = recipe.image
       ? `<img class="recipe-card-img" src="${escapeHTML(recipe.image)}" alt="${escapeHTML(recipe.title)}" loading="lazy">`
       : `<div class="recipe-card-img-placeholder">${categoryIcon(recipe.category)}</div>`;
- 
+
     return `
       <article class="recipe-card fade-up" onclick="App.showDetail(${parseInt(recipe.id, 10)})">
         ${imgHTML}
@@ -67,14 +67,14 @@ const UI = (() => {
         </div>
       </article>`;
   };
- 
+
   // ── Comment Item ──────────────────────────────────
   const commentItem = (comment, currentUserId) => {
     if (!comment) return '';
     const authorName = comment.name || 'Usuario';
-    const initial = authorName.charAt(0).toUpperCase();
-    const canDelete = currentUserId && comment.author_id == currentUserId;
- 
+    const initial    = authorName.charAt(0).toUpperCase();
+    const canDelete  = currentUserId && comment.author_id == currentUserId;
+
     return `
       <div class="comment-item fade-up" id="comment-${comment.id}">
         <div class="comment-avatar">${initial}</div>
@@ -88,7 +88,7 @@ const UI = (() => {
         </div>
       </div>`;
   };
- 
+
   // ── Login Modal ───────────────────────────────────
   const loginModal = () => {
     return `
@@ -116,9 +116,9 @@ const UI = (() => {
         <div class="form-link-row">¿No tienes cuenta? <span class="form-link" onclick="UI.openRegisterModal()">Regístrate gratis</span></div>
       </div>`;
   };
- 
+
   const openLoginModal = () => openModal(loginModal());
- 
+
   // ── Register Modal ────────────────────────────────
   const registerModal = () => {
     return `
@@ -156,47 +156,47 @@ const UI = (() => {
         <div class="form-link-row">¿Ya tienes cuenta? <span class="form-link" onclick="UI.openLoginModal()">Inicia sesión</span></div>
       </div>`;
   };
- 
+
   const openRegisterModal = () => openModal(registerModal());
- 
+
   // ── Recipe Form Modal ─────────────────────────────
   const recipeFormModal = (recipe) => {
-    const isEdit = !!(recipe && recipe.id);
+    const isEdit    = !!(recipe && recipe.id);
     const modalTitle = isEdit ? 'Editar receta' : 'Nueva receta';
-    const btnLabel  = isEdit ? '💾 Guardar cambios' : '✨ Publicar receta';
- 
+    const btnLabel   = isEdit ? '💾 Guardar cambios' : '✨ Publicar receta';
+
     const ings = (isEdit && recipe.ingredients && recipe.ingredients.length)
       ? recipe.ingredients : [''];
- 
+
     const stps = (isEdit && recipe.steps && recipe.steps.length)
       ? recipe.steps : [''];
- 
+
     const ingsHTML = ings.map(function(v, i) {
       return '<div class="ingredient-row" id="ing-row-' + i + '">'
         + '<input type="text" class="form-input ing-input" value="' + escapeHTML(v) + '" placeholder="Ej: 2 tazas de harina">'
         + '<button class="remove-row-btn" onclick="UI.removeRow(this)" title="Quitar">✕</button>'
         + '</div>';
     }).join('');
- 
+
     const stpsHTML = stps.map(function(v, i) {
       return '<div class="ingredient-row" id="stp-row-' + i + '">'
         + '<input type="text" class="form-input stp-input" value="' + escapeHTML(v) + '" placeholder="Ej: Mezclar los ingredientes secos">'
         + '<button class="remove-row-btn" onclick="UI.removeRow(this)" title="Quitar">✕</button>'
         + '</div>';
     }).join('');
- 
+
     const catOpts = Recipes.CATEGORIES.filter(function(c) { return c !== 'Todas'; })
       .map(function(c) {
         var sel = (isEdit && recipe.category === c) ? ' selected' : '';
         return '<option value="' + c + '"' + sel + '>' + c + '</option>';
       }).join('');
- 
+
     var recipeIdValue = isEdit ? parseInt(recipe.id, 10) : 0;
     var imgSrc   = (isEdit && recipe.image) ? escapeHTML(recipe.image) : '';
     var imgShow  = (isEdit && recipe.image) ? ' show' : '';
     var titleVal = isEdit ? escapeHTML(recipe.title) : '';
     var descVal  = isEdit ? escapeHTML(recipe.description) : '';
- 
+
     var html = '<div class="modal-header">'
       + '<h3>' + modalTitle + '</h3>'
       + '<button class="modal-close" onclick="UI.closeModal()">✕</button>'
@@ -242,10 +242,10 @@ const UI = (() => {
       + '<button class="btn btn-primary" onclick="App.handleSaveRecipe(' + recipeIdValue + ')">' + btnLabel + '</button>'
       + '</div>'
       + '</div>';
- 
+
     return html;
   };
- 
+
   const openRecipeForm = async (recipeId) => {
     let recipe = null;
     if (recipeId && recipeId !== 0) {
@@ -261,30 +261,30 @@ const UI = (() => {
     }
     openModal(recipeFormModal(recipe));
   };
- 
+
   // ── Dynamic rows ──────────────────────────────────
   const addIngredientRow = () => {
     const list = document.getElementById('ings-list');
-    const div = document.createElement('div');
+    const div  = document.createElement('div');
     div.className = 'ingredient-row';
     div.innerHTML = '<input type="text" class="form-input ing-input" placeholder="Ej: 1 taza de azúcar">'
       + '<button class="remove-row-btn" onclick="UI.removeRow(this)" title="Quitar">✕</button>';
     list.appendChild(div);
     div.querySelector('input').focus();
   };
- 
+
   const addStepRow = () => {
     const list = document.getElementById('stps-list');
-    const div = document.createElement('div');
+    const div  = document.createElement('div');
     div.className = 'ingredient-row';
     div.innerHTML = '<input type="text" class="form-input stp-input" placeholder="Ej: Hornear por 30 min a 180°C">'
       + '<button class="remove-row-btn" onclick="UI.removeRow(this)" title="Quitar">✕</button>';
     list.appendChild(div);
     div.querySelector('input').focus();
   };
- 
+
   const removeRow = (btn) => {
-    const row = btn.closest('.ingredient-row');
+    const row    = btn.closest('.ingredient-row');
     const parent = row.parentElement;
     if (parent.querySelectorAll('.ingredient-row').length > 1) {
       row.remove();
@@ -292,32 +292,28 @@ const UI = (() => {
       toast('Debe haber al menos uno.', 'error');
     }
   };
- 
+
   // ── Image upload → servidor ───────────────────────
+  // Usa Storage.apiUpload para que la URL sea correcta en local y en producción
   const previewImage = async (input) => {
     const preview = document.getElementById('rf-img-preview');
     const nameEl  = document.getElementById('rf-file-name');
     if (!input.files || !input.files[0]) return;
- 
+
     const file = input.files[0];
     nameEl.textContent = '⏳ Subiendo...';
- 
-    // Mostrar preview local inmediato mientras sube
+
+    // Preview local inmediato
     const reader = new FileReader();
     reader.onload = (e) => { preview.src = e.target.result; preview.classList.add('show'); };
     reader.readAsDataURL(file);
- 
-    // Subir al servidor
+
+    // Subir al servidor mediante Storage.apiUpload
     try {
       const formData = new FormData();
       formData.append('image', file);
-      const response = await fetch('/Proyecto_Final/api.php/upload', {
-        method: 'POST',
-        body: formData
-      });
-      const result = await response.json();
+      const result = await Storage.apiUpload(formData);
       if (result.success) {
-        // Guardar la URL del servidor en el preview para que app.js la use
         preview.dataset.serverUrl = result.url;
         nameEl.textContent = '✅ ' + file.name;
       } else {
@@ -329,7 +325,7 @@ const UI = (() => {
       toast('No se pudo subir la imagen.', 'error');
     }
   };
- 
+
   // ── Confirm Modal ─────────────────────────────────
   const confirmDialog = (message, onConfirm) => {
     window._pendingConfirm = onConfirm;
@@ -346,14 +342,14 @@ const UI = (() => {
       + '</div></div>'
     );
   };
- 
+
   // ── Nav Auth Area ─────────────────────────────────
   const renderNavAuth = async () => {
     try {
       const user = await Storage.getCurrentUser();
       const area = document.getElementById('nav-auth-area');
       if (!area) return;
- 
+
       if (user && user.name) {
         const initial = user.name.charAt(0).toUpperCase();
         area.innerHTML = '<div class="nav-user-badge">'
@@ -374,7 +370,7 @@ const UI = (() => {
       }
     }
   };
- 
+
   // ── Helpers ───────────────────────────────────────
   const escapeHTML = (str) => {
     if (!str) return '';
@@ -385,14 +381,14 @@ const UI = (() => {
       .replace(/"/g, '&quot;')
       .replace(/'/g, '&#39;');
   };
- 
+
   const formatDate = (iso) => {
     try {
       const d = new Date(iso);
       return d.toLocaleDateString('es-CO', { year: 'numeric', month: 'short', day: 'numeric' });
     } catch(e) { return ''; }
   };
- 
+
   const categoryIcon = (cat) => {
     const icons = {
       'Sopas': '🍲', 'Platos fuertes': '🍽️', 'Entradas': '🥗',
@@ -401,19 +397,19 @@ const UI = (() => {
     };
     return icons[cat] || '🍳';
   };
- 
+
   const showError = (id, msg) => {
     const el = document.getElementById(id);
     if (el) { el.textContent = msg; el.classList.add('show'); }
   };
- 
+
   const clearErrors = (...ids) => {
     ids.forEach(id => {
       const el = document.getElementById(id);
       if (el) { el.textContent = ''; el.classList.remove('show'); }
     });
   };
- 
+
   return {
     toast, openModal, closeModal,
     starsHTML, recipeCard, commentItem,
@@ -424,5 +420,5 @@ const UI = (() => {
     showError, clearErrors
   };
 })();
- 
+
 window.UI = UI;
