@@ -1,5 +1,10 @@
 const Storage = (() => {
-  const API_BASE = '/api.php';
+  // Usa la base definida en index.php, o detecta automáticamente
+  const BASE = (window.APP_CONFIG && window.APP_CONFIG.apiUrl)
+    ? window.APP_CONFIG.apiUrl
+    : (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+        ? '/Proyecto_Final/api.php'
+        : '/api.php');
 
   const api = async (endpoint, method = 'GET', data = null) => {
     const url = `${API_BASE}/${endpoint}`;

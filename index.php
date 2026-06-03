@@ -1,6 +1,14 @@
 <?php
 header('Content-Type: text/html; charset=UTF-8');
+$isLocal = (
+    isset($_SERVER['HTTP_HOST']) &&
+    (strpos($_SERVER['HTTP_HOST'], 'localhost') !== false ||
+     strpos($_SERVER['HTTP_HOST'], '127.0.0.1') !== false)
+);
+$base = $isLocal ? '/Proyecto_Final' : '';
+$v = '4.0';
 ?>
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
