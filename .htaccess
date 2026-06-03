@@ -1,9 +1,11 @@
 Options +FollowSymLinks
 RewriteEngine On
 
-# Forzar query strings en lugar de PATH_INFO (Render no maneja bien PATH_INFO)
+# Permitir acceso directo a archivos y carpetas que existen
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
-RewriteRule ^api\.php/(.*)$ /api.php?path=$1 [L,QSA]
+
+# Todo lo demás va a index.php
+RewriteRule ^(.*)$ /index.php [L,QSA]
 
 DirectoryIndex index.php

@@ -1,8 +1,12 @@
 <?php
-// db.php — Conexión a la base de datos
-// NO emite headers aquí (eso lo hace api.php)
+// db_only.php — Solo conexión a BD, sin headers HTTP
+// Los headers van en api.php para evitar output duplicado
 
-require_once 'config.php';
+define('DB_HOST', getenv('DB_HOST') ?: 'localhost');
+define('DB_USER', getenv('DB_USER') ?: 'root');
+define('DB_PASS', getenv('DB_PASSWORD') ?: '');
+define('DB_NAME', getenv('DB_NAME') ?: 'fogon_db');
+define('DB_PORT', intval(getenv('DB_PORT') ?: '3306'));
 
 class Database {
     private $connection;
@@ -10,6 +14,7 @@ class Database {
     public function __construct() {
         $this->connection = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME, DB_PORT);
         if ($this->connection->connect_error) {
+            // Error de conexión como JSON válido
             http_response_code(500);
             echo json_encode(['error' => 'Conexión fallida: ' . $this->connection->connect_error]);
             exit;
@@ -20,7 +25,7 @@ class Database {
     public function query($sql, $params = [], $types = '') {
         $stmt = $this->connection->prepare($sql);
         if (!$stmt) {
-            throw new Exception('Prepare failed: ' . $this->connection->error);
+            throw new Exception('Prepare failed: ' . $this->connection->error . ' | SQL: ' . $sql);
         }
         if (!empty($params)) {
             $types = $types ?: str_repeat('s', count($params));
@@ -33,7 +38,7 @@ class Database {
     public function execute($sql, $params = [], $types = '') {
         $stmt = $this->connection->prepare($sql);
         if (!$stmt) {
-            throw new Exception('Prepare failed: ' . $this->connection->error);
+            throw new Exception('Prepare failed: ' . $this->connection->error . ' | SQL: ' . $sql);
         }
         if (!empty($params)) {
             $types = $types ?: str_repeat('s', count($params));
